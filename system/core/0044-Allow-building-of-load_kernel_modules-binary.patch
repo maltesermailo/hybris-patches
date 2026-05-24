@@ -1,0 +1,51 @@
+From dd3786bf50d034258bdc90be1fab99cfcdbe1275 Mon Sep 17 00:00:00 2001
+From: Jannik Mueller <jannik@andreasmueller.de>
+Date: Mon, 25 May 2026 00:31:33 +0200
+Subject: [PATCH] Allow building of load_kernel_modules binary
+
+Change-Id: I46fde5e921abbafbc719c5663952ea90cc47aa36
+---
+ init/Android.bp           | 11 +++++++++++
+ init/first_stage_init.cpp |  4 ++++
+ 2 files changed, 15 insertions(+)
+
+diff --git a/init/Android.bp b/init/Android.bp
+index 7d4bf738c..05dc1137a 100644
+--- a/init/Android.bp
++++ b/init/Android.bp
+@@ -499,6 +499,17 @@ cc_binary {
+     defaults: ["init_first_stage_defaults"],
+ }
+ 
++cc_binary {
++    name: "init_load_kernel_modules",
++    defaults: ["init_first_stage_defaults"],
++    cflags: [
++       "-DHYBRIS_EXIT_AFTER_LOAD_KERNEL_MODULES=1",
++    ],
++    stem: "load_kernel_modules",
++    install_in_root: false,
++}
++
++
+ cc_binary {
+     name: "init_first_stage.microdroid",
+     defaults: [
+diff --git a/init/first_stage_init.cpp b/init/first_stage_init.cpp
+index ce6e0d570..614e3e5f3 100644
+--- a/init/first_stage_init.cpp
++++ b/init/first_stage_init.cpp
+@@ -463,6 +463,10 @@ int FirstStageMain(int argc, char** argv) {
+                   << module_elapse_time.count() << " ms";
+     }
+ 
++#ifdef HYBRIS_EXIT_AFTER_LOAD_KERNEL_MODULES
++    return 0;
++#endif
++
+     MaybeResumeFromHibernation(bootconfig);
+ 
+     std::unique_ptr<FirstStageMount> fsm;
+-- 
+2.53.0
+
