@@ -1,4 +1,4 @@
-From dd3786bf50d034258bdc90be1fab99cfcdbe1275 Mon Sep 17 00:00:00 2001
+From adf42a74add0088b02a5ab083e21d94aa46b6733 Mon Sep 17 00:00:00 2001
 From: Jannik Mueller <jannik@andreasmueller.de>
 Date: Mon, 25 May 2026 00:31:33 +0200
 Subject: [PATCH] Allow building of load_kernel_modules binary
@@ -6,8 +6,8 @@ Subject: [PATCH] Allow building of load_kernel_modules binary
 Change-Id: I46fde5e921abbafbc719c5663952ea90cc47aa36
 ---
  init/Android.bp           | 11 +++++++++++
- init/first_stage_init.cpp |  4 ++++
- 2 files changed, 15 insertions(+)
+ init/first_stage_init.cpp |  9 ++++++++-
+ 2 files changed, 19 insertions(+), 1 deletion(-)
 
 diff --git a/init/Android.bp b/init/Android.bp
 index 7d4bf738c..05dc1137a 100644
@@ -32,10 +32,33 @@ index 7d4bf738c..05dc1137a 100644
      name: "init_first_stage.microdroid",
      defaults: [
 diff --git a/init/first_stage_init.cpp b/init/first_stage_init.cpp
-index ce6e0d570..614e3e5f3 100644
+index ce6e0d570..37015cc3b 100644
 --- a/init/first_stage_init.cpp
 +++ b/init/first_stage_init.cpp
-@@ -463,6 +463,10 @@ int FirstStageMain(int argc, char** argv) {
+@@ -355,7 +355,9 @@ int FirstStageMain(int argc, char** argv) {
+     //CHECKCALL(mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755"));
+     //CHECKCALL(mkdir("/dev/pts", 0755));
+     /*CHECKCALL*/(mkdir("/dev/socket", 0755));
++#ifndef HYBRIS_EXIT_AFTER_LOAD_KERNEL_MODULES
+     CHECKCALL(mkdir("/dev/dm-user", 0755));
++#endif
+     //CHECKCALL(mount("devpts", "/dev/pts", "devpts", 0, NULL));
+ #define MAKE_STR(x) __STRING(x)
+     //CHECKCALL(mount("proc", "/proc", "proc", 0, "hidepid=2,gid=" MAKE_STR(AID_READPROC)));
+@@ -374,10 +376,11 @@ int FirstStageMain(int argc, char** argv) {
+ #endif
+ 
+     //CHECKCALL(mknod("/dev/kmsg", S_IFCHR | 0600, makedev(1, 11)));
+-
++#ifndef HYBRIS_EXIT_AFTER_LOAD_KERNEL_MODULES
+     if constexpr (WORLD_WRITABLE_KMSG) {
+         CHECKCALL(mknod("/dev/kmsg_debug", S_IFCHR | 0622, makedev(1, 11)));
+     }
++#endif
+ 
+     //CHECKCALL(mknod("/dev/random", S_IFCHR | 0666, makedev(1, 8)));
+     //CHECKCALL(mknod("/dev/urandom", S_IFCHR | 0666, makedev(1, 9)));
+@@ -463,6 +466,10 @@ int FirstStageMain(int argc, char** argv) {
                    << module_elapse_time.count() << " ms";
      }
  
@@ -47,5 +70,5 @@ index ce6e0d570..614e3e5f3 100644
  
      std::unique_ptr<FirstStageMount> fsm;
 -- 
-2.53.0
+2.31.1
 
